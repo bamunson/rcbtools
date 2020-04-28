@@ -654,7 +654,7 @@ def surfabund(*profiles, savefig = None, ind_tau = None, labels = []):
         f.savefig(savefig)
 
 def surfabund2(*profiles, elements, savefig = None, ind_tau = None, labels = [],\
-               observed_datafile = 'rcbtools.__path__/observed_abund.csv'):
+               observed_datafile = rcbtools.__path__'/observed_abund.csv'):
     '''
     Similar to surfabund, but more general. The user will provide a list of elements to plot.
     Also, the star symbols representing observed surface abundances are automatically plotted
