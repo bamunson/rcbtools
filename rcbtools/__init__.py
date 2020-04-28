@@ -1,11 +1,20 @@
 import numpy as np
 import matplotlib.pyplot as plt
-import re
+import sys, os, re
 import pandas as pd
 
 __version__ = 0.1
 __author__ = "Brad Munson"
 __credits__ = "Louisiana State University"
+
+for dirname in sys.path:
+    candidate = os.path.join(dirname, 'rcbtools/observed_abund.csv')
+    if os.path.isfile(candidate):
+        obs_datafile = candidate
+        print("Found observed datafile")
+        break
+    if dirname == sys.path[-1]:
+        print("Could not find datafile")
 
 def profile2dict(profile, skip_header = 5, global_headers = False):
     '''
@@ -654,7 +663,7 @@ def surfabund(*profiles, savefig = None, ind_tau = None, labels = []):
         f.savefig(savefig)
 
 def surfabund2(*profiles, elements, savefig = None, ind_tau = None, labels = [],\
-               observed_datafile = ""):
+               observed_datafile = obs_datafile):
     '''
     Similar to surfabund, but more general. The user will provide a list of elements to plot.
     Also, the star symbols representing observed surface abundances are automatically plotted
@@ -683,8 +692,6 @@ def surfabund2(*profiles, elements, savefig = None, ind_tau = None, labels = [],
     Plots specified abundances.
 
     '''
-    if not observed_datafile:
-        observed_datafile = rcbtools.__path__ + 'observed_abund.csv'
         
     file = pd.read_csv(observed_datafile,delimiter=',')
     
