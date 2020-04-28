@@ -3,8 +3,6 @@ An analysis toolkit for RCB stars simulated in MESA
 
 ## Installing rcbtools
 
-Clone or copy this repository.
+To install rcbtools, simply clone or download this repo, then 'cd' into it and type the following command:
 
-Go to rcbtools directory.
-
-Type command "pip install ."
+`pip install .`
