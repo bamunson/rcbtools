@@ -1,20 +1,50 @@
 import numpy as np
 import matplotlib.pyplot as plt
-import sys, os, re
+import re
 import pandas as pd
 
 __version__ = 0.1
 __author__ = "Brad Munson"
 __credits__ = "Louisiana State University"
 
-for dirname in sys.path:
-    candidate = os.path.join(dirname, 'rcbtools/observed_abund.csv')
-    if os.path.isfile(candidate):
-        obs_datafile = candidate
-        print("Found observed datafile")
-        break
-    if dirname == sys.path[-1]:
-        print("Could not find datafile")
+from pkg_resources import resource_filename as rfname
+obs_data = rfname(__name__, "observed_abund.csv")
+
+mus = {'H'  : 1.0079,
+       'He' : 4.0026,
+       'Be' : 9.0122,
+       'B'  : 10.811,
+       'Li' : 6.941,
+       'N'  : 14.0067,
+       'O'  : 15.9994,
+       'C'  : 12.0107,
+       'F'  : 18.9984,
+       'Na' : 22.9897,
+       'Ne' : 20.1797,
+       'Mg' : 24.305,
+       'Al' : 26.9815,
+       'Si' : 28.0855,
+       'P'  : 30.9738,
+       'S'  : 32.065,
+       'Cl' : 35.453,
+       'Ar' : 39.948,
+       'K'  : 39.0983,
+       'Ca' : 40.078,
+       'Ti' : 47.867,
+       'V'  : 50.94,
+       'Cr' : 51.9961,
+       'Mn' : 54.94,
+       'Fe' : 55.845,
+       'Co' : 58.9332,
+       'Ni' : 58.6934,
+       'Cu' : 63.546,
+       'Zn' : 65.39,
+       'Sc' : 44.955908,
+       'Y'  : 88.90594,
+       'Zr' : 91.224,
+       'Ba' : 137.327,
+       'La' : 138.90547
+       }
 
 def profile2dict(profile, skip_header = 5, global_headers = False):
     '''
@@ -48,7 +78,7 @@ def profile2dict(profile, skip_header = 5, global_headers = False):
             p[header] = gdata[i]
     return p
 
-def makeabund(profile,return_mus = False, skip_header = 5, combine_isos = True):
+def makeabund(profile, skip_header = 5, combine_isos = True):
     '''
     Generate a Python Dictionary containing the isotope information from a data file.
     The format of the names must be all lowercase and no non-letter/numeric characters.
@@ -76,43 +106,6 @@ def makeabund(profile,return_mus = False, skip_header = 5, combine_isos = True):
     '''
     headers = np.genfromtxt(profile,dtype='str',skip_header=skip_header)[0]
     data = np.loadtxt(profile,skiprows=skip_header+1)
-    
-    #Mean atomic masses
-    mus = {}
-    mus['H']  = 1.0079
-    mus['He'] = 4.0026
-    mus['Be'] = 9.0122
-    mus['B']  = 10.811
-    mus['Li'] = 6.941
-    mus['N']  = 14.0067
-    mus['O']  = 15.9994
-    mus['C']  = 12.0107
-    mus['F']  = 18.9984
-    mus['Na'] = 22.9897
-    mus['Ne'] = 20.1797
-    mus['Mg'] = 24.305
-    mus['Al'] = 26.9815
-    mus['Si'] = 28.0855
-    mus['P']  = 30.9738
-    mus['S']  = 32.065
-    mus['Cl'] = 35.453
-    mus['Ar'] = 39.948
-    mus['K']  = 39.0983
-    mus['Ca'] = 40.078
-    mus['Ti'] = 47.867
-    mus['V']  = 50.94
-    mus['Cr'] = 51.9961
-    mus['Mn'] = 54.94
-    mus['Fe'] = 55.845
-    mus['Co'] = 58.9332
-    mus['Ni'] = 58.6934
-    mus['Cu'] = 63.546
-    mus['Zn'] = 65.39
-    mus['Sc'] = 44.955908
-    mus['Y']  = 88.90594
-    mus['Zr'] = 91.224
-    mus['Ba'] = 137.327
-    mus['La'] = 138.90547
        
     isos = []
     abunds = {}
@@ -136,12 +129,9 @@ def makeabund(profile,return_mus = False, skip_header = 5, combine_isos = True):
         for i in eles_idx:
             abunds[current_ele] += abunds[isos[i]]
         k = eles_idx[-1]+1
-    if return_mus: 
-        return abunds, mus
-    else:
-        return abunds
+    return abunds
     
-def historyabund(profile, skip_header = 5, combine_isos = True, return_mus = True):
+def historyabund(profile, skip_header = 5, combine_isos = True):
     '''
     Take surface abundances from history file formatted from run_star_extras routine.
     Note that the header name needs to be formatted as "rcb_<isotope>". Will also combine
@@ -162,42 +152,6 @@ def historyabund(profile, skip_header = 5, combine_isos = True, return_mus = Tru
         Dictionary containing surface abundances at each timestep in history file.
 
     '''    
-    #Mean atomic masses
-    mus = {}
-    mus['H']  = 1.0079
-    mus['He'] = 4.0026
-    mus['Be'] = 9.0122
-    mus['B']  = 10.811
-    mus['Li'] = 6.941
-    mus['N']  = 14.0067
-    mus['O']  = 15.9994
-    mus['C']  = 12.0107
-    mus['F']  = 18.9984
-    mus['Na'] = 22.9897
-    mus['Ne'] = 20.1797
-    mus['Mg'] = 24.305
-    mus['Al'] = 26.9815
-    mus['Si'] = 28.0855
-    mus['P']  = 30.9738
-    mus['S']  = 32.065
-    mus['Cl'] = 35.453
-    mus['Ar'] = 39.948
-    mus['K']  = 39.0983
-    mus['Ca'] = 40.078
-    mus['Ti'] = 47.867
-    mus['V']  = 50.94
-    mus['Cr'] = 51.9961
-    mus['Mn'] = 54.94
-    mus['Fe'] = 55.845
-    mus['Co'] = 58.9332
-    mus['Ni'] = 58.6934
-    mus['Cu'] = 63.546
-    mus['Zn'] = 65.39
-    mus['Sc'] = 44.955908
-    mus['Y']  = 88.90594
-    mus['Zr'] = 91.224
-    mus['Ba'] = 137.327
-    mus['La'] = 138.90547
     
     headers = np.genfromtxt(profile,dtype='str',skip_header=skip_header)[0]
     data = np.loadtxt(profile,skiprows=skip_header+1)
@@ -225,10 +179,8 @@ def historyabund(profile, skip_header = 5, combine_isos = True, return_mus = Tru
             abunds[current_ele] += abunds[isos[i]]
         k = eles_idx[-1]+1
         
-    if return_mus: 
-        return abunds, mus
-    else:
-        return abunds
+
+    return abunds
 
 def surfabund(*profiles, savefig = None, ind_tau = None, labels = []):
     '''
@@ -571,7 +523,7 @@ def surfabund(*profiles, savefig = None, ind_tau = None, labels = []):
     
     
     for index,profile in enumerate(profiles):
-        abunds,mus = makeabund(profile,return_mus=True)
+        abunds = makeabund(profile)
         p = profile2dict(profile)
         
         dm = p['dm']
@@ -663,7 +615,7 @@ def surfabund(*profiles, savefig = None, ind_tau = None, labels = []):
         f.savefig(savefig)
 
 def surfabund2(*profiles, elements, savefig = None, ind_tau = None, labels = [],\
-               observed_datafile = obs_datafile):
+               observed_datafile = obs_data):
     '''
     Similar to surfabund, but more general. The user will provide a list of elements to plot.
     Also, the star symbols representing observed surface abundances are automatically plotted
@@ -728,6 +680,8 @@ def surfabund2(*profiles, elements, savefig = None, ind_tau = None, labels = [],
     
     for i in range(row):
         for j in range(col):
+            if col*i+j >= len(elements):
+                break
             if elements[col*i+j] in file.columns:
                 axarr[i, j].scatter(file['Fe']-solar['Fe'], file[elements[col*i+j]]-solar[elements[col*i+j]],\
                                     c='r',s=100,marker='*')
@@ -748,7 +702,7 @@ def surfabund2(*profiles, elements, savefig = None, ind_tau = None, labels = [],
     
     
     for index,profile in enumerate(profiles):
-        abunds,mus = makeabund(profile,return_mus=True)
+        abunds = makeabund(profile)
         p = profile2dict(profile)
         
         dm = p['dm']
@@ -800,6 +754,8 @@ def surfabund2(*profiles, elements, savefig = None, ind_tau = None, labels = [],
         
         for i in range(row):
             for j in range(col):
+                if col*i+j >= len(elements):
+                    break
                 if i == j == 0:
                     axarr[i, j].scatter(values['Fe']-solar['Fe'],\
                                         values[elements[col*i+j]]-solar[elements[col*i+j]],label = labels[index],s=100,marker='s')
@@ -1150,7 +1106,7 @@ def surfabund_hist(*filenames, labels):
     axarr[4, 3].text(-2.3, 1.8, 'La', fontsize=14, fontweight='bold')
     
     for index, filename in enumerate(filenames):
-        abunds,mus = historyabund(filename)
+        abunds = historyabund(filename)
         h = profile2dict(filename)
         
         ind = np.argmin(h['log_Teff'])        
