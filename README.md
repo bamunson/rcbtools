@@ -24,7 +24,7 @@ import rcbtools
 import matplotlib.pyplot as plt
 
 p = rcbtools.profile2dict('profile1.data') # Create a dict of values from a MESA profile (column headers are keys)
-plt.semilogy(p["mass"],10**p["log_T"]) # Create log plot of temperature v mass
+plt.semilogy(p["mass"],10**p["logT"]) # Create log plot of temperature v mass
 
 abunds = rcbtools.makeabund('profile1.data') # Create a dict of elements from MESA profile
 plt.loglog(p["mass"],abunds["C"]) # Create a log plot of total carbon abundance (sum of all isotopes) v mass
