@@ -24,6 +24,7 @@ import rcbtools
 import matplotlib.pyplot as plt
 
 p = rcbtools.profile2dict('profile1.data') # Create a dict of values from a MESA profile (column headers are keys)
+p.keys() # See a list of available keys for the dictionary "p"
 plt.semilogy(p["mass"],10**p["logT"]) # Create log plot of temperature v mass
 
 abunds = rcbtools.makeabund('profile1.data') # Create a dict of elements from MESA profile
