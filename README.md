@@ -30,9 +30,7 @@ plt.semilogy(p["mass"],10**p["logT"]) # Create log plot of temperature v mass
 abunds = rcbtools.makeabund('profile1.data') # Create a dict of elements from MESA profile
 plt.loglog(p["mass"],abunds["C"]) # Create a log plot of total carbon abundance (sum of all isotopes) v mass
 
-rcbtools.surfabund('profile1.data') # Make surface abundance plot and print surface information
-
-rcbtools.surfabund2('profile1.data',elements=['Li','C','N','O','Ne']) # Same as above, but specify elements
+rcbtools.rcbsurf('profile1.data') # Make surface abundance plot and print surface information
 
 h = rcbtools.profile2dict('history.data') #Import history datafile as python dict
 
