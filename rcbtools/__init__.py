@@ -275,7 +275,7 @@ def rcbsurf(*profiles, elements = [], savefig = None, ind_tau = None, labels = [
                 valid = np.where(file[elements[col*i+j]] == file[elements[col*i+j]])[0]
                 axarr[i, j].scatter(file['Fe'][valid]-solar['Fe'], file[elements[col*i+j]][valid]-solar[elements[col*i+j]],\
                                     color=file['Color'][valid],s=100,marker='*')
-                axarr[i, j].set_xlim([-2.5,0.0])
+                axarr[i, j].set_xlim([-2.5,-0.01])
                 axarr[i, j].xaxis.set_tick_params(labelsize=11)
                 axarr[i, j].yaxis.set_tick_params(labelsize=11)
                 axarr[i, j].set_ylim([-2.4,3.6])
@@ -287,6 +287,8 @@ def rcbsurf(*profiles, elements = [], savefig = None, ind_tau = None, labels = [
                     axarr[i, j].set_ylabel("[X]",fontsize=10, fontweight='bold')
     f.subplots_adjust(left = 0.05, right = 0.95, top = 0.95, bottom = 0.08,\
                         wspace=0, hspace=0)
+    
+    autolabel = labels.copy()
     
     for index,profile in enumerate(profiles):
         p = profile2dict(profile,global_headers = True)
@@ -335,9 +337,8 @@ def rcbsurf(*profiles, elements = [], savefig = None, ind_tau = None, labels = [
             else:
                 values[element] = -99
             print(element,round(values[element]-solar[element],3))
-          
-        if not labels:
-            labels.append(profile)
+        
+        if not labels: autolabel.append(profile)
         
         for i in range(row):
             for j in range(col):
@@ -345,7 +346,7 @@ def rcbsurf(*profiles, elements = [], savefig = None, ind_tau = None, labels = [
                     break
                 if i == j == 0:
                     axarr[i, j].scatter(values['Fe']-solar['Fe'],\
-                                        values[elements[col*i+j]]-solar[elements[col*i+j]],label = labels[index],s=100,marker='s')
+                                        values[elements[col*i+j]]-solar[elements[col*i+j]],label = autolabel[index],s=100,marker='s')
                 else:
                     axarr[i, j].scatter(values['Fe']-solar['Fe'],\
                                         values[elements[col*i+j]]-solar[elements[col*i+j]],s=100,marker='s')
