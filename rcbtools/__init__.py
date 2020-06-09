@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import re
 import pandas as pd
 
-__version__ = '0.2.2'
+__version__ = '0.3.1'
 __author__ = "Brad Munson"
 __credits__ = "Louisiana State University"
 
@@ -50,7 +50,7 @@ def profile2dict(profile, skip_header = 5, global_headers = False):
     '''
     Turn a general profile/history data file into a python dictionary. In a MESA output file,
     the first 5 lines are skipped (default).
-
+    
     Parameters
     ----------
     profile : str
@@ -59,24 +59,25 @@ def profile2dict(profile, skip_header = 5, global_headers = False):
         How many lines to skip at beginning of file. The default is 5.
     global_headers : bool, optional
         If True, read the second and third row to get global variables of star.
-
+        
     Returns
     -------
     p : dict
         Python dictionary containing keys (headers) for data contained in profile/history 
         data file.
-
     '''
-    headers = np.genfromtxt(profile,dtype='str',skip_header=skip_header)[0]
-    data = np.loadtxt(profile,skiprows=skip_header+1)
+    with open(profile) as f:
+        data = [lines.split() for lines in f]
+
+    p = dict(zip(data[skip_header],np.array(data[skip_header + 1:],dtype=float).T))
     
-    p = dict(zip(headers,data.T))
     if global_headers:
-        gheaders = np.genfromtxt(profile,dtype='str',skip_header=1,max_rows = 1)
-        gdata = np.loadtxt(profile,skiprows=2,dtype='str',max_rows = 1)
+        gheaders = data[1]
+        gdata = data[2]
         for i,header in enumerate(gheaders):
             p[header] = gdata[i]
     return p
+    
 
 def makeabund(profile, skip_header = 5, combine_isos = True):
     '''
@@ -104,15 +105,14 @@ def makeabund(profile, skip_header = 5, combine_isos = True):
         Dictionary containing mean molecular mass information.
 
     '''
-    headers = np.genfromtxt(profile,dtype='str',skip_header=skip_header)[0]
-    data = np.loadtxt(profile,skiprows=skip_header+1)
+    p = profile2dict(profile, skip_header = skip_header)
        
     isos = []
     abunds = {}
-    for i,header in enumerate(headers):
+    for i,header in enumerate(p.keys()):
         if re.match(r'[a-z]{1,2}[0-9]{1,3}$',header) or header == 'neut':
             isos.append(header)
-            abunds[header] = data[:,i]
+            abunds[header] = p[header]
             
     isos.sort()
     names = [re.sub('[0-9]', '', i) for i in isos]
@@ -153,15 +153,14 @@ def historyabund(profile, skip_header = 5, combine_isos = True):
 
     '''    
     
-    headers = np.genfromtxt(profile,dtype='str',skip_header=skip_header)[0]
-    data = np.loadtxt(profile,skiprows=skip_header+1)
-       
+    p = profile2dict(profile, skip_header = skip_header)
+
     isos = []
     abunds = {}
-    for i,header in enumerate(headers):
+    for i,header in enumerate(p.keys()):
         if 'rcb_' in header:
             isos.append(header[4:])
-            abunds[header[4:]] = data[:,i]
+            abunds[header[4:]] = p[header]
             
     isos.sort()
     names = [re.sub('[0-9]', '', i) for i in isos]
@@ -183,7 +182,8 @@ def historyabund(profile, skip_header = 5, combine_isos = True):
     return abunds
 
 def rcbsurf(*profiles, elements = [], savefig = None, ind_tau = None, labels = [],\
-               observed_datafile = obs_data, fig_handles = False, legend = False):
+               observed_datafile = obs_data, fig_handles = False, legend = False,\
+               line = False):
     '''
     This function plots the surface abundances of a list of elements compared to observed RCB stars.
     As opposed to previous iterations, this function will take history datafiles or profiles for any
@@ -322,9 +322,9 @@ def rcbsurf(*profiles, elements = [], savefig = None, ind_tau = None, labels = [
         print('----------------------------------------------------------------')
         print('PARAMETERS OF INTEREST')
         print('----------------------------------------------------------------')
-        print('C12/C13 ', abunds['c12']/abunds['c13'])
-        print('O16/O18 ', round(abunds['o16']/abunds['o18'],2))
-        print('C/O     ', round(abunds['C']/abunds['O'],2))
+        print('C12/C13 ', (abunds['c12']/abunds['c13'])*(13/12))
+        print('O16/O18 ', round((abunds['o16']/abunds['o18'])*(18/16),2))
+        print('C/O     ', round((abunds['C']/abunds['O'])*(mus['O']/mus['C']),2))
         print('RCB Age ', round(float(RCB_age)), 'years')
         print('Model   ', int(RCB_model))
         
@@ -342,6 +342,8 @@ def rcbsurf(*profiles, elements = [], savefig = None, ind_tau = None, labels = [
         
         for i in range(row):
             for j in range(col):
+                if line:
+                    axarr[i, j].plot([-5,5],[-5,5],'k--')
                 if col*i+j >= len(elements):
                     break
                 if i == j == 0:
@@ -354,6 +356,5 @@ def rcbsurf(*profiles, elements = [], savefig = None, ind_tau = None, labels = [
     if legend: f.legend(loc = 'upper right')
     f.align_ylabels(axarr[:,0])
     f.show()
-    if savefig:
-        f.savefig(savefig)
+    if savefig: f.savefig(savefig)
     if fig_handles: return f, axarr
