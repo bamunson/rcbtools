@@ -2,14 +2,21 @@
 An analysis toolkit for RCB stars simulated in MESA
 
 ## Installing/Uninstalling rcbtools
+This toolkit is now in the PyPI repository. This means it can be downloaded via `pip install rcbtools` in the command line.
 
-To install rcbtools, simply clone or download this repo, then `cd` into it and type the following command:
+Alternatively, simply clone or download this repo, then `cd` into it and type the following command:
 
 `pip install .`
+
+If you do not have PyPI installed, you can download this repo and use the following command:
+
+`python setup.py install`
 
 To uninstall rcbtools, type the following command:
 
 `pip uninstall rcbtools`
+
+Otherwise, remove all `rcbtools` directories inside your `$PYTHONPATH`.
 
 ## Using rcbtools
 
