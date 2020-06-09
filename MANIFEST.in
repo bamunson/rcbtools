@@ -1,2 +1,2 @@
 include README.md
-include rcbtools/observed_data.csv
+include rcbtools/observed_abund.csv
