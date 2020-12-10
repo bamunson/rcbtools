@@ -1,7 +1,7 @@
 from setuptools import setup
 
 setup(name='rcbtools',
-      version='0.3.1',
+      version='0.4.0',
       description='Analysis toolkit for RCB stars evolved in MESA',
       url='https://github.com/bamunson/rcbtools',
       author='Brad Munson',
