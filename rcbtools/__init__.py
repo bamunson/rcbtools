@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import re
 import pandas as pd
 
-__version__ = '0.3.1'
+__version__ = '0.4.0'
 __author__ = "Brad Munson"
 __credits__ = "Louisiana State University"
 
@@ -46,6 +46,29 @@ mus = {'H'  : 1.0079,
        'La' : 138.90547
        }
 
+solar = {'Li' : 3.35,
+         'C'  : 8.46,
+         'N'  : 7.90,
+         'O'  : 8.76,
+         'F'  : 4.53,
+         'Ne' : 7.95,
+         'Na' : 6.37,
+         'Mg' : 7.62,
+         'Al' : 6.54,
+         'Si' : 7.61,
+         'S'  : 7.26,
+         'Ca' : 6.41,
+         'Sc' : 3.15,
+         'Ti' : 5.00,
+         'Ni' : 6.29,
+         'Zn' : 4.70,
+         'Y'  : 2.28,
+         'Zr' : 2.67,
+         'Ba' : 2.25,
+         'La' : 1.25,
+         'Fe' : 7.54
+         }
+
 def profile2dict(profile, skip_header = 5, global_headers = False):
     '''
     Turn a general profile/history data file into a python dictionary. In a MESA output file,
@@ -78,6 +101,54 @@ def profile2dict(profile, skip_header = 5, global_headers = False):
             p[header] = gdata[i]
     return p
     
+def makehr(*profiles, legend = False, makebox = True, box_points = ((3.9,3.6),(3.6,4.0)), ifig = None):
+    '''
+    
+
+    Parameters
+    ----------
+    profiles : str
+        Path to the history data file(s).
+    legend : bool, optional
+        If true, create a legend with profile as key. The default is False.
+    makebox : bool, optional
+        If true, create the target box for observed RCB stars. The default is True.
+    box_points : set, optional
+        A set of two coordinate points. Formatting is
+        ((lower left x,lower left y),(upper right x, upper right y)).
+        The coordinate point values are log10(x).
+        The default is ((3.9,3.6),(3.6,4.0)).
+    ifig : int, optional
+        If set to an integer, create new figure with integer key.
+        This is helpful if you do not want to overwrite existing plot windows.
+        Should be set to an integer greater than the number of plot windows open.
+
+    Returns
+    -------
+    HR plot for every profile.
+
+    '''
+    
+    if ifig: plt.figure(ifig)
+    
+    (llx,lly),(urx,ury) = box_points
+    
+    boxx = np.array((llx,urx,urx,llx,llx))
+    boxy = np.array((lly,lly,ury,ury,lly))
+    box = np.transpose(np.vstack((boxx,boxy)))
+    
+    plt.loglog(10**box[:,0],10**box[:,1],'k')
+    plt.xlabel(r'$\log{T_{eff}/K}$',fontsize=14)
+    plt.ylabel(r'$\log{L/L_\odot}$',fontsize=14)
+    plt.gca().invert_xaxis()
+    
+    for profile in profiles:
+        p = profile2dict(profile)
+        if not {'log_Teff','log_L'}.issubset(p.keys()):
+            print(profile,'does not have log_Teff and log_L data available.')
+        plt.loglog(10**p['log_Teff'], 10**p['log_L'], label=profile)
+    
+    plt.show()
 
 def makeabund(profile, skip_header = 5, combine_isos = True):
     '''
@@ -202,6 +273,12 @@ def rcbsurf(*profiles, elements = [], savefig = None, ind_tau = None, labels = [
         
         If elements is left empty, default to ['Li','C','N','O','F','Ne','Na','Mg',
         'Al','Si','S','Ca','Sc','Ti','Ni','Zn','Y','Zr','Ba','La'].
+        
+        Note: Not all elements are included and will not work with this function. To add more
+        elements, update the dictionaries "mus" and "solar" and the top of the __init__.py file.
+        mus is the mean molecular mass of the element and solar is the normalizing amount of that
+        element in the sun. Also, to add observed values, update the "observed_abund.csv" datafile
+        included in this package.
     savefig : str, optional
         If a string is provided, save the plot under that filename. The default is None.
     ind_tau : int, optional
@@ -244,29 +321,6 @@ def rcbsurf(*profiles, elements = [], savefig = None, ind_tau = None, labels = [
     
     f, axarr = plt.subplots(row, col, figsize = [col*3,row*3],sharex = True,sharey=True)
     
-    solar = {}
-    solar['Li'] = 3.35
-    solar['C'] = 8.46
-    solar['N'] = 7.90
-    solar['O'] = 8.76
-    solar['F'] = 4.53
-    solar['Ne'] = 7.95
-    solar['Na'] = 6.37
-    solar['Mg'] = 7.62
-    solar['Al'] = 6.54
-    solar['Si'] = 7.61
-    solar['S'] = 7.26
-    solar['Ca'] = 6.41
-    solar['Sc'] = 3.15
-    solar['Ti'] = 5.00
-    solar['Ni'] = 6.29
-    solar['Zn'] = 4.70
-    solar['Y'] = 2.28
-    solar['Zr'] = 2.67
-    solar['Ba'] = 2.25
-    solar['La'] = 1.25
-    solar['Fe'] = 7.54
-    
     for i in range(row):
         for j in range(col):
             if col*i+j >= len(elements):
@@ -275,7 +329,7 @@ def rcbsurf(*profiles, elements = [], savefig = None, ind_tau = None, labels = [
                 valid = np.where(file[elements[col*i+j]] == file[elements[col*i+j]])[0]
                 axarr[i, j].scatter(file['Fe'][valid]-solar['Fe'], file[elements[col*i+j]][valid]-solar[elements[col*i+j]],\
                                     color=file['Color'][valid],s=100,marker='*')
-                axarr[i, j].set_xlim([-2.5,-0.01])
+                axarr[i, j].set_xlim([-2.7,-0.01])
                 axarr[i, j].xaxis.set_tick_params(labelsize=11)
                 axarr[i, j].yaxis.set_tick_params(labelsize=11)
                 axarr[i, j].set_ylim([-2.4,3.6])
@@ -285,14 +339,15 @@ def rcbsurf(*profiles, elements = [], savefig = None, ind_tau = None, labels = [
                     axarr[i, j].set_xlabel("[Fe]",fontsize=10, fontweight='bold')
                 if j == 0:
                     axarr[i, j].set_ylabel("[X]",fontsize=10, fontweight='bold')
+                    
     f.subplots_adjust(left = 0.05, right = 0.95, top = 0.95, bottom = 0.08,\
-                        wspace=0, hspace=0)
+                    wspace=0, hspace=0)
     
     autolabel = labels.copy()
     
     for index,profile in enumerate(profiles):
         p = profile2dict(profile,global_headers = True)
-        if 'zone' in p.keys() or 'history' not in profile:
+        if 'zone' in p.keys():
             abunds = makeabund(profile)
             dm = p['dm']
             if ind_tau:
